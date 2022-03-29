@@ -19,9 +19,9 @@ c = a + b
 ### Вопросы:
 | Вопрос  | Ответ |
 | ------------- | ------------- |
-| Какое значение будет присвоено переменной `c`?  | ???  |
-| Как получить для переменной `c` значение 12?  | ???  |
-| Как получить для переменной `c` значение 3?  | ???  |
+| Какое значение будет присвоено переменной `c`?  | будет ошибка, т.к. типы не соответсвуют для операции int и str|
+| Как получить для переменной `c` значение 12?  | str(a)+b  |
+| Как получить для переменной `c` значение 3?  | a+int(b)  |
 
 ## Обязательная задача 2
 Мы устроились на работу в компанию, где раньше уже был DevOps Engineer. Он написал скрипт, позволяющий узнать, какие файлы модифицированы в репозитории, относительно локальных изменений. Этим скриптом недовольно начальство, потому что в его выводе есть не все изменённые файлы, а также непонятен полный путь к директории, где они находятся. Как можно доработать скрипт ниже, чтобы он исполнял требования вашего руководителя?
@@ -43,12 +43,25 @@ for result in result_os.split('\n'):
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+
+import os
+
+bash_command = ["cd ~/devops-netology/", "git status"]
+result_os = os.popen(' && '.join(bash_command)).read()
+#is_change = False
+for result in result_os.split('\n'):
+    if result.find('modified') != -1:
+        prepare_result = result.replace('\tmodified:   ', '')
+        print(prepare_result)
+#        break
+
 ```
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-???
+$ py 1.py
+The system cannot find the path specified.
 ```
 
 ## Обязательная задача 3
@@ -56,12 +69,53 @@ for result in result_os.split('\n'):
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+
+import os
+import sys
+
+cmd = os.getcwd()
+
+if len(sys.argv)>=2:
+    cmd = sys.argv[1]
+bash_command = ["cd "+cmd, "git status 2>&1"]
+
+print('\033[31m')
+result_os = os.popen(' && '.join(bash_command)).read()
+#is_change = False
+for result in result_os.split('\n'):
+    if result.find('fatal') != -1:
+        print('\033[31m Каталог \033[1m '+cmd+'\033[0m\033[31m не является GIT репозиторием\033[0m')    
+    if result.find('изменено') != -1:
+        prepare_result = result.replace('\tизменено: ', '')
+# добавил замену всех оставшихся пробелов в строке для удобства вывода
+        prepare_result = prepare_result.replace(' ', '') 
+        print(cmd+prepare_result)
+#        break
+print('\033[0m')
+
 ```
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-???
+$ py 2.py ~/devops-netology/
+
+
+
+Insane@DESKTOP-4G8DTV7 MINGW64 ~/devops-netology (main)
+$ py 2.py ~/devops/
+The system cannot find the path specified.
+
+
+
+Insane@DESKTOP-4G8DTV7 MINGW64 ~/devops-netology (main)
+$ cd ~
+
+Insane@DESKTOP-4G8DTV7 MINGW64 ~
+$ py ~/devops-netology/2.py
+
+ ▒▒▒▒▒▒▒  C:\Users\Insane ▒▒ ▒▒▒▒▒▒▒▒ GIT ▒▒▒▒▒▒▒▒▒▒▒▒
+
 ```
 
 ## Обязательная задача 4
@@ -69,12 +123,45 @@ for result in result_os.split('\n'):
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+
+import socket as s
+import time as t
+import datetime as dt
+
+# set variables 
+i = 1
+wait = 2 # интервал проверок в секундах
+srv = {'drive.google.com':'0.0.0.0', 'mail.google.com':'0.0.0.0', 'google.com':'0.0.0.0'}
+init=0
+
+print('*** start script ***')
+print(srv)
+print('********************')
+
+while 1==1 : #отладочное число проверок 
+  for host in srv:
+    ip = s.gethostbyname(host)
+    if ip != srv[host]:
+      if i==1 and init !=1:
+        print(str(dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) +' [ERROR] ' + str(host) +' IP mistmatch: '+srv[host]+' '+ip)
+      srv[host]=ip
+# счетчик итераций для отладки, закомментировать для бесконечного цикла 3 строки
+  i+=1 
+  if i >= 50 : 
+    break
+  t.sleep(wait)
 ```
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-???
+$ py 4.py
+*** start script ***
+{'drive.google.com': '0.0.0.0', 'mail.google.com': '0.0.0.0', 'google.com': '0.0.0.0'}
+********************
+2022-03-22 23:54:06 [ERROR] drive.google.com IP mistmatch: 0.0.0.0 173.194.73.194
+2022-03-22 23:54:06 [ERROR] mail.google.com IP mistmatch: 0.0.0.0 74.125.205.18
+2022-03-22 23:54:06 [ERROR] google.com IP mistmatch: 0.0.0.0 74.125.131.138
 ```
 
 ## Дополнительное задание (со звездочкой*) - необязательно к выполнению
