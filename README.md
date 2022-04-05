@@ -2,178 +2,175 @@
 
 Вы уже изучили блок «Системы управления версиями», и начиная с этого занятия все ваши работы будут приниматься ссылками на .md-файлы, размещённые в вашем публичном репозитории.
 
-Скопируйте в свой .md-файл содержимое этого файла; исходники можно посмотреть [здесь](https://raw.githubusercontent.com/netology-code/sysadm-homeworks/devsys10/04-script-02-py/README.md). Заполните недостающие части документа решением задач (заменяйте `???`, ОСТАЛЬНОЕ В ШАБЛОНЕ НЕ ТРОГАЙТЕ чтобы не сломать форматирование текста, подсветку синтаксиса и прочее, иначе можно отправиться на доработку) и отправляйте на проверку. Вместо логов можно вставить скриншоты по желани.
+Скопируйте в свой .md-файл содержимое этого файла; исходники можно посмотреть [здесь](https://raw.githubusercontent.com/netology-code/sysadm-homeworks/devsys10/04-script-03-yaml/README.md). Заполните недостающие части документа решением задач (заменяйте `???`, ОСТАЛЬНОЕ В ШАБЛОНЕ НЕ ТРОГАЙТЕ чтобы не сломать форматирование текста, подсветку синтаксиса и прочее, иначе можно отправиться на доработку) и отправляйте на проверку. Вместо логов можно вставить скриншоты по желани.
 
-# Домашнее задание к занятию "4.2. Использование Python для решения типовых DevOps задач"
+# Домашнее задание к занятию "4.3. Языки разметки JSON и YAML"
+
 
 ## Обязательная задача 1
-
-Есть скрипт:
-```python
-#!/usr/bin/env python3
-a = 1
-b = '2'
-c = a + b
+Мы выгрузили JSON, который получили через API запрос к нашему сервису:
 ```
+     { "info" : "Sample JSON output from our service\\t",
+        "elements" :[
+            { "name" : "first",
+            "type" : "server",
+            "ip" : 7175 
+            },
+            { "name" : "second",
+            "type" : "proxy",
+            "ip" : "71.78.22.43"
+            }
+        ]
+    }
+```
+  Нужно найти и исправить все ошибки, которые допускает наш сервис
 
-### Вопросы:
-| Вопрос  | Ответ |
-| ------------- | ------------- |
-| Какое значение будет присвоено переменной `c`?  | будет ошибка, т.к. типы не соответсвуют для операции int и str|
-| Как получить для переменной `c` значение 12?  | str(a)+b  |
-| Как получить для переменной `c` значение 3?  | a+int(b)  |
+Ответ:
 
+1 строка - экранирование спецсимвола \t
+
+6 строка - запятая после }
+
+9 строка - кавычки в ключе ip, значение в кавычки
 ## Обязательная задача 2
-Мы устроились на работу в компанию, где раньше уже был DevOps Engineer. Он написал скрипт, позволяющий узнать, какие файлы модифицированы в репозитории, относительно локальных изменений. Этим скриптом недовольно начальство, потому что в его выводе есть не все изменённые файлы, а также непонятен полный путь к директории, где они находятся. Как можно доработать скрипт ниже, чтобы он исполнял требования вашего руководителя?
-
-```python
-#!/usr/bin/env python3
-
-import os
-
-bash_command = ["cd ~/netology/sysadm-homeworks", "git status"]
-result_os = os.popen(' && '.join(bash_command)).read()
-is_change = False
-for result in result_os.split('\n'):
-    if result.find('modified') != -1:
-        prepare_result = result.replace('\tmodified:   ', '')
-        print(prepare_result)
-        break
-```
+В прошлый рабочий день мы создавали скрипт, позволяющий опрашивать веб-сервисы и получать их IP. К уже реализованному функционалу нам нужно добавить возможность записи JSON и YAML файлов, описывающих наши сервисы. Формат записи JSON по одному сервису: `{ "имя сервиса" : "его IP"}`. Формат записи YAML по одному сервису: `- имя сервиса: его IP`. Если в момент исполнения скрипта меняется IP у сервиса - он должен так же поменяться в yml и json файле.
 
 ### Ваш скрипт:
 ```python
 #!/usr/bin/env python3
 
+import socket
+import time
 import os
+import json
+import yaml
 
-bash_command = ["cd ~/devops-netology/", "git status"]
-result_os = os.popen(' && '.join(bash_command)).read()
-#is_change = False
-for result in result_os.split('\n'):
-    if result.find('modified') != -1:
-        prepare_result = result.replace('\tmodified:   ', '')
-        print(prepare_result)
-#        break
+# Подготовка структуры для хранения значений
+service_list = [
+    { "drive.google.com": None },
+    { "mail.google.com": None },
+    { "google.com": None }
+]
 
-```
-
-### Вывод скрипта при запуске при тестировании:
-```
-$ py 1.py
-The system cannot find the path specified.
-```
-
-## Обязательная задача 3
-1. Доработать скрипт выше так, чтобы он мог проверять не только локальный репозиторий в текущей директории, а также умел воспринимать путь к репозиторию, который мы передаём как входной параметр. Мы точно знаем, что начальство коварное и будет проверять работу этого скрипта в директориях, которые не являются локальными репозиториями.
-
-### Ваш скрипт:
-```python
-#!/usr/bin/env python3
-
-import os
-import sys
-
-cmd = os.getcwd()
-
-if len(sys.argv)>=2:
-    cmd = sys.argv[1]
-bash_command = ["cd "+cmd, "git status 2>&1"]
-
-print('\033[31m')
-result_os = os.popen(' && '.join(bash_command)).read()
-#is_change = False
-for result in result_os.split('\n'):
-    if result.find('fatal') != -1:
-        print('\033[31m Каталог \033[1m '+cmd+'\033[0m\033[31m не является GIT репозиторием\033[0m')    
-    if result.find('изменено') != -1:
-        prepare_result = result.replace('\tизменено: ', '')
-# добавил замену всех оставшихся пробелов в строке для удобства вывода
-        prepare_result = prepare_result.replace(' ', '') 
-        print(cmd+prepare_result)
-#        break
-print('\033[0m')
+while True:
+    # Очистка кэша DNS
+    os.popen("systemd-resolve --flush-caches")
+    # Выполнение опроса для каждого домена
+    for srv in service_list:
+        for domain in srv.keys():
+            try:
+                response = socket.gethostbyname(domain)
+                # Проверка полученных значений с предыдущими. Сохранение полученных значений
+                if srv[domain] == None:
+                    srv[domain] = response
+                    print(f"{domain} - {response}")
+                elif ( srv[domain] != None ) and ( srv[domain] != response ):
+                    print(f"[ERROR] {domain} IP mismatch: {srv[domain]} {response}")
+                    srv[domain] = response
+                else:
+                    print(f"{domain} - {response}")
+                time.sleep(1)
+            # Обработка исключений
+            except socket.gaierror as err:
+                print(f"[ERROR] {domain} - {err}")
+    # Вывод собранной информации в файлы .json и .yml
+    with open("services.json", "w", encoding="utf-8") as j:
+        j.write(json.dumps(service_list, indent=4, ensure_ascii=False))
+    print(".json file updated")
+    with open("services.yml", "w", encoding="utf-8") as y:
+        y.write(yaml.dump(service_list, default_flow_style=False, \
+            explicit_start=True, explicit_end=True))
+    print(".yml file updated")
 
 ```
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-$ py 2.py ~/devops-netology/
-
-
-
-Insane@DESKTOP-4G8DTV7 MINGW64 ~/devops-netology (main)
-$ py 2.py ~/devops/
-The system cannot find the path specified.
-
-
-
-Insane@DESKTOP-4G8DTV7 MINGW64 ~/devops-netology (main)
-$ cd ~
-
-Insane@DESKTOP-4G8DTV7 MINGW64 ~
-$ py ~/devops-netology/2.py
-
- ▒▒▒▒▒▒▒  C:\Users\Insane ▒▒ ▒▒▒▒▒▒▒▒ GIT ▒▒▒▒▒▒▒▒▒▒▒▒
-
+drive.google.com - 142.251.31.194
+mail.google.com - 173.194.69.19
+google.com - 142.250.145.100
+.json file updated
+.yml file updated
+drive.google.com - 142.251.31.194
+[ERROR] mail.google.com IP mismatch: 173.194.69.19 173.194.69.18
+google.com - 142.250.145.100
+.json file updated
+.yml file updated
+drive.google.com - 142.251.31.194
+[ERROR] mail.google.com IP mismatch: 173.194.69.18 173.194.69.83
+google.com - 142.250.145.100
+.json file updated
+.yml file updated
+drive.google.com - 142.251.31.194
+[ERROR] mail.google.com IP mismatch: 173.194.69.83 173.194.69.17
+[ERROR] google.com IP mismatch: 142.250.145.100 142.250.145.101
+.json file updated
+.yml file updated
+drive.google.com - 142.251.31.194
+[ERROR] mail.google.com IP mismatch: 173.194.69.17 173.194.69.19
+[ERROR] google.com IP mismatch: 142.250.145.101 142.250.145.113
+.json file updated
+.yml file updated
+drive.google.com - 142.251.31.194
+[ERROR] mail.google.com IP mismatch: 173.194.69.19 173.194.69.83
+google.com - 142.250.145.113
+.json file updated
+.yml file updated
+drive.google.com - 142.251.31.194
+[ERROR] mail.google.com IP mismatch: 173.194.69.83 173.194.69.17
+[ERROR] google.com IP mismatch: 142.250.145.113 142.250.145.139
+.json file updated
+.yml file updated
+drive.google.com - 142.251.31.194
+mail.google.com - 173.194.69.17
+google.com - 142.250.145.139
+.json file updated
+.yml file updated
+drive.google.com - 142.251.31.194
+mail.google.com - 173.194.69.17
+[ERROR] google.com IP mismatch: 142.250.145.139 142.250.145.113
+.json file updated
+.yml file updated
 ```
 
-## Обязательная задача 4
-1. Наша команда разрабатывает несколько веб-сервисов, доступных по http. Мы точно знаем, что на их стенде нет никакой балансировки, кластеризации, за DNS прячется конкретный IP сервера, где установлен сервис. Проблема в том, что отдел, занимающийся нашей инфраструктурой очень часто меняет нам сервера, поэтому IP меняются примерно раз в неделю, при этом сервисы сохраняют за собой DNS имена. Это бы совсем никого не беспокоило, если бы несколько раз сервера не уезжали в такой сегмент сети нашей компании, который недоступен для разработчиков. Мы хотим написать скрипт, который опрашивает веб-сервисы, получает их IP, выводит информацию в стандартный вывод в виде: <URL сервиса> - <его IP>. Также, должна быть реализована возможность проверки текущего IP сервиса c его IP из предыдущей проверки. Если проверка будет провалена - оповестить об этом в стандартный вывод сообщением: [ERROR] <URL сервиса> IP mismatch: <старый IP> <Новый IP>. Будем считать, что наша разработка реализовала сервисы: `drive.google.com`, `mail.google.com`, `google.com`.
-
-### Ваш скрипт:
-```python
-#!/usr/bin/env python3
-
-import socket as s
-import time as t
-import datetime as dt
-
-# set variables 
-i = 1
-wait = 2 # интервал проверок в секундах
-srv = {'drive.google.com':'0.0.0.0', 'mail.google.com':'0.0.0.0', 'google.com':'0.0.0.0'}
-init=0
-
-print('*** start script ***')
-print(srv)
-print('********************')
-
-while 1==1 : #отладочное число проверок 
-  for host in srv:
-    ip = s.gethostbyname(host)
-    if ip != srv[host]:
-      if i==1 and init !=1:
-        print(str(dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) +' [ERROR] ' + str(host) +' IP mistmatch: '+srv[host]+' '+ip)
-      srv[host]=ip
-# счетчик итераций для отладки, закомментировать для бесконечного цикла 3 строки
-  i+=1 
-  if i >= 50 : 
-    break
-  t.sleep(wait)
+### json-файл(ы), который(е) записал ваш скрипт:
+```json
+[
+    {
+        "drive.google.com": "142.251.31.194"
+    },
+    {
+        "mail.google.com": "173.194.69.17"
+    },
+    {
+        "google.com": "142.250.145.113"
+    }
+]
 ```
 
-### Вывод скрипта при запуске при тестировании:
-```
-$ py 4.py
-*** start script ***
-{'drive.google.com': '0.0.0.0', 'mail.google.com': '0.0.0.0', 'google.com': '0.0.0.0'}
-********************
-2022-03-22 23:54:06 [ERROR] drive.google.com IP mistmatch: 0.0.0.0 173.194.73.194
-2022-03-22 23:54:06 [ERROR] mail.google.com IP mistmatch: 0.0.0.0 74.125.205.18
-2022-03-22 23:54:06 [ERROR] google.com IP mistmatch: 0.0.0.0 74.125.131.138
+### yml-файл(ы), который(е) записал ваш скрипт:
+```yaml
+---
+- drive.google.com: 142.251.31.194
+- mail.google.com: 173.194.69.17
+- google.com: 142.250.145.113
+...
 ```
 
 ## Дополнительное задание (со звездочкой*) - необязательно к выполнению
 
-Так получилось, что мы очень часто вносим правки в конфигурацию своей системы прямо на сервере. Но так как вся наша команда разработки держит файлы конфигурации в github и пользуется gitflow, то нам приходится каждый раз переносить архив с нашими изменениями с сервера на наш локальный компьютер, формировать новую ветку, коммитить в неё изменения, создавать pull request (PR) и только после выполнения Merge мы наконец можем официально подтвердить, что новая конфигурация применена. Мы хотим максимально автоматизировать всю цепочку действий. Для этого нам нужно написать скрипт, который будет в директории с локальным репозиторием обращаться по API к github, создавать PR для вливания текущей выбранной ветки в master с сообщением, которое мы вписываем в первый параметр при обращении к py-файлу (сообщение не может быть пустым). При желании, можно добавить к указанному функционалу создание новой ветки, commit и push в неё изменений конфигурации. С директорией локального репозитория можно делать всё, что угодно. Также, принимаем во внимание, что Merge Conflict у нас отсутствуют и их точно не будет при push, как в свою ветку, так и при слиянии в master. Важно получить конечный результат с созданным PR, в котором применяются наши изменения. 
+Так как команды в нашей компании никак не могут прийти к единому мнению о том, какой формат разметки данных использовать: JSON или YAML, нам нужно реализовать парсер из одного формата в другой. Он должен уметь:
+   * Принимать на вход имя файла
+   * Проверять формат исходного файла. Если файл не json или yml - скрипт должен остановить свою работу
+   * Распознавать какой формат данных в файле. Считается, что файлы *.json и *.yml могут быть перепутаны
+   * Перекодировать данные из исходного формата во второй доступный (из JSON в YAML, из YAML в JSON)
+   * При обнаружении ошибки в исходном файле - указать в стандартном выводе строку с ошибкой синтаксиса и её номер
+   * Полученный файл должен иметь имя исходного файла, разница в наименовании обеспечивается разницей расширения файлов
 
 ### Ваш скрипт:
 ```python
 ???
 ```
 
-### Вывод скрипта при запуске при тестировании:
-```
+### Пример работы скрипта:
 ???
-```
