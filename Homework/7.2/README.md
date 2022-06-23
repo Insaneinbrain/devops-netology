@@ -211,7 +211,8 @@ run "terraform apply" now.
 ```
 2. Ссылку на репозиторий с исходной конфигурацией терраформа.  
 ```
-
+https://github.com/Insaneinbrain/devops-netology/blob/main/Homework/7.2/main.tf
+https://github.com/Insaneinbrain/devops-netology/blob/main/Homework/7.2/versions.tf
 ```
 ---
 
