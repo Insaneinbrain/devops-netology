@@ -404,11 +404,11 @@ kibana                     : ok=9    changed=0    unreachable=0    failed=0    s
 ```
 9. Подготовьте README.md файл по своему playbook. В нём должно быть описано: что делает playbook, какие у него есть параметры и теги.
 ```buildoutcfg
-
+https://github.com/Insaneinbrain/devops-netology/tree/main/Homework/8.2/playbook
 ```
 10. Готовый playbook выложите в свой репозиторий, в ответ предоставьте ссылку на него.
 ```buildoutcfg
-
+https://github.com/Insaneinbrain/devops-netology/tree/main/Homework/8.2/playbook
 ```
 
 ## Необязательная часть
